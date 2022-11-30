@@ -1,0 +1,12 @@
+server:
+  port: 8021
+spring:
+  application:
+    name: view-service
+  cloud:
+    nacos:
+      server-addr: 10.2.0.170:8848
+      discovery:
+        username: nacos
+        password: nacos
+        namespace: public
