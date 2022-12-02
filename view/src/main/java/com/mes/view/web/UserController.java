@@ -1,5 +1,6 @@
 package com.mes.view.web;
 
+import com.mes.view.feign.UserFeignService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -12,12 +13,10 @@ import java.util.Map;
 @RestController
 @RequestMapping("view/user")
 public class UserController {
-    private final RestTemplate restTemplate;
+    private final UserFeignService userFeignService;
 
     @RequestMapping("getUser")
     public Map<String, String> get(String id) {
-        ResponseEntity<Map> entity = restTemplate.getForEntity("http://user-service/user/get?id=" + id, Map.class);
-        Map<String, String> body = entity.getBody();
-        return body;
+        return userFeignService.get(id);
     }
 }
