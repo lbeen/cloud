@@ -5,7 +5,7 @@ spring:
     name: user-service
   cloud:
     nacos:
-      server-addr: 10.2.0.170:8848
+      server-addr: 10.2.64.182:8841
       discovery:
         username: nacos
         password: nacos
