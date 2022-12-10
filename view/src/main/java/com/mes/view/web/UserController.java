@@ -10,14 +10,14 @@ import java.util.Map;
 
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("view/user")
+@RequestMapping("user")
 public class UserController {
     private final UserFeignService userFeignService;
 
     @Value("${server.port}")
     private String port;
 
-    @RequestMapping("getUser")
+    @RequestMapping("get")
     public Map<String, String> get(String id) {
         Map<String, String> data = userFeignService.get(id);
         data.put("viwPort", port);

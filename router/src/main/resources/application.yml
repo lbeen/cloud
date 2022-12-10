@@ -15,6 +15,6 @@ spring:
         - id: view-router
           uri: lb://view-service
           predicates:
-            - Path=/view-service/**
+            - Path=/view/**
           filters:
             - StripPrefix=1
