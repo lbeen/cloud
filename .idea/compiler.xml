@@ -9,6 +9,7 @@
         <outputRelativeToContentRoot value="true" />
         <module name="user" />
         <module name="view" />
+        <module name="router" />
       </profile>
     </annotationProcessing>
   </component>
