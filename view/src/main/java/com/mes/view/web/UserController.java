@@ -3,10 +3,8 @@ package com.mes.view.web;
 import com.mes.view.feign.UserFeignService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.client.RestTemplate;
 
 import java.util.Map;
 
@@ -16,8 +14,13 @@ import java.util.Map;
 public class UserController {
     private final UserFeignService userFeignService;
 
+    @Value("${server.port}")
+    private String port;
+
     @RequestMapping("getUser")
     public Map<String, String> get(String id) {
-        return userFeignService.get(id);
+        Map<String, String> data = userFeignService.get(id);
+        data.put("viwPort", port);
+        return data;
     }
 }

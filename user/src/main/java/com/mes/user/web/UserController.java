@@ -18,7 +18,7 @@ public class UserController {
         Map<String, String> data = Maps.newHashMap();
         data.put("id", id);
         data.put("name", "test" + id);
-        data.put("port", port);
+        data.put("userPort", port);
         return data;
     }
 }

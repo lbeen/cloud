@@ -3,3 +3,18 @@ server:
 spring:
   application:
     name: router-service
+  cloud:
+    nacos:
+      server-addr: 10.2.64.182:8841
+      discovery:
+        username: nacos
+        password: nacos
+        namespace: public
+    gateway:
+      routes:
+        - id: view-router
+          uri: lb://view-service
+          predicates:
+            - Path=/view-service/**
+          filters:
+            - StripPrefix=1

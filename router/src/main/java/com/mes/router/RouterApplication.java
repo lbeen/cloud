@@ -1,11 +1,11 @@
 package com.mes.router;
 
-//import org.springframework.boot.SpringApplication;
-//import org.springframework.boot.autoconfigure.SpringBootApplication;
-//
-//@SpringBootApplication
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
 public class RouterApplication {
     public static void main(String[] args) {
-//        SpringApplication.run(UserApplication.class, args);
+        SpringApplication.run(RouterApplication.class, args);
     }
 }
