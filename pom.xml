@@ -12,6 +12,8 @@
         <module>user</module>
         <module>view</module>
         <module>router</module>
+        <module>common</module>
+        <module>system</module>
     </modules>
 
     <properties>
