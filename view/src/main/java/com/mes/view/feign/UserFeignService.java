@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.Map;
 
-@FeignClient(name = "user-service", path = "user")
+@FeignClient(name = "system-service", path = "user")
 public interface UserFeignService {
     @RequestMapping("get")
     Map<String, String> get(@RequestParam("id") String id);

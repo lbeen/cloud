@@ -1,8 +1,8 @@
 server:
-  port: 8011
+  port: 8001
 spring:
   application:
-    name: user-service
+    name: system-service
   cloud:
     nacos:
       server-addr: 10.2.64.182:8841
