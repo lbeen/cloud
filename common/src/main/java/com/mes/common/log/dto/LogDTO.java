@@ -11,10 +11,9 @@ public class LogDTO {
 
     private final LocalDateTime time;
     private final String server;
+    private final String serverIP;
     private final String clazz;
     private final int level;
     private final String user;
-    private final String serverIP;
-    private final String clientIp;
     private final String content;
 }

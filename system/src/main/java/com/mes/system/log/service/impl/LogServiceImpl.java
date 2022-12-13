@@ -16,7 +16,6 @@ public class LogServiceImpl implements LogService {
         info += " level:" + logDTO.getLevel();
         info += " user:" + logDTO.getUser();
         info += " serverIP:" + logDTO.getServerIP();
-        info += " clientIp:" + logDTO.getClientIp();
         info += " content:" + logDTO.getContent();
         System.out.println(info);
         return new Random().nextInt(100);
