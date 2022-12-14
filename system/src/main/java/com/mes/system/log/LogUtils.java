@@ -1,7 +1,6 @@
 package com.mes.system.log;
 
 import com.mes.common.log.dto.LogDTO;
-import com.mes.system.log.service.LogService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 

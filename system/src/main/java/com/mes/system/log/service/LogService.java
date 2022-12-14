@@ -1,7 +1,6 @@
 package com.mes.system.log.service;
 
-import com.mes.common.log.dto.LogDTO;
+import com.baomidou.mybatisplus.extension.service.IService;
+import com.mes.system.log.entity.SystemLog;
 
-public interface LogService {
-    int log(LogDTO logDTO);
-}
+public interface LogService extends IService<SystemLog> {}
