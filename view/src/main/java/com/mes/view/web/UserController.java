@@ -1,6 +1,6 @@
 package com.mes.view.web;
 
-import com.mes.common.log.utils.LogUtils;
+import com.mes.view.LogUtils;
 import com.mes.view.feign.UserFeignService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.RequestMapping;

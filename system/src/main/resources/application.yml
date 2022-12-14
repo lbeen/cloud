@@ -3,6 +3,17 @@ server:
 spring:
   application:
     name: system-service
+  datasource:
+    type: com.alibaba.druid.pool.DruidDataSource
+    url: jdbc:oracle:thin:@//10.2.64.143/TCSCADA
+    username: TCSCADA
+    password: RD_dev#TCsca@401
+    driver-class-name: oracle.jdbc.OracleDriver
+    druid:
+      initial-size: 0
+      min-idle: 1
+      max-active: 5
+      max-wait: 60000
   cloud:
     nacos:
       server-addr: 10.2.64.182:8841
