@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.Map;
 
-@FeignClient(name = "system-service", path = "log")
+@FeignClient(contextId = "log", name = "system-service", path = "log")
 public interface LogFeignService {
     @PostMapping("log")
     Result<Integer> log(@RequestBody LogDTO logDTO);

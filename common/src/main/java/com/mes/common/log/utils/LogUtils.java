@@ -1,12 +1,9 @@
 package com.mes.common.log.utils;
 
-import com.mes.common.Result;
 import com.mes.common.log.dto.LogDTO;
 import com.mes.common.log.feign.LogFeignService;
 import com.mes.common.sys.utils.ServerUtils;
 import com.mes.common.sys.utils.SpringContextUtils;
-
-import java.time.LocalDateTime;
 
 /**
  * 日志工具类
