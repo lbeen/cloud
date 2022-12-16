@@ -1,8 +1,7 @@
 package com.mes.system.log.web;
 
-import com.mes.common.Result;
 import com.mes.common.log.dto.LogDTO;
-import com.mes.system.log.service.LogService;
+import com.mes.common.log.service.LogService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -15,8 +14,8 @@ import org.springframework.web.bind.annotation.RestController;
 public class LogController {
     private final LogService logService;
 
-    @PostMapping("log")
-    public Result<Integer> log(@RequestBody LogDTO logDTO) {
-        return Result.success(logService.saveLog(logDTO));
+    @PostMapping("saveLog")
+    public int saveLog(@RequestBody LogDTO logDTO) {
+        return logService.saveLog(logDTO);
     }
 }

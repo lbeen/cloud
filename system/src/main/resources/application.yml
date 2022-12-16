@@ -1,13 +1,13 @@
 server:
-  port: 8001
+  port: 8011
 spring:
   application:
     name: system-service
   datasource:
     type: com.alibaba.druid.pool.DruidDataSource
-    url: jdbc:oracle:thin:@//10.2.64.143/TCSCADA
-    username: TCSCADA
-    password: RD_dev#TCsca@401
+    url: jdbc:oracle:thin:@10.2.0.171:1521:BSTEST
+    username: fc_mes
+    password: fc_mes
     driver-class-name: oracle.jdbc.OracleDriver
     druid:
       initial-size: 0

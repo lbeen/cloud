@@ -1,8 +1,7 @@
 package com.mes.system.user.web;
 
 import com.google.common.collect.Maps;
-import com.mes.system.log.LogUtils;
-import org.springframework.beans.factory.annotation.Value;
+import com.mes.common.log.utils.LogUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 

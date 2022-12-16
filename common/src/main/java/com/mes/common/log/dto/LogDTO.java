@@ -9,6 +9,7 @@ public class LogDTO {
 
     private String server;
     private String serverIP;
+    private String serverPort;
     private String clazz;
     private String clientIP;
     private String user;

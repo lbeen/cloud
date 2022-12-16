@@ -12,11 +12,13 @@ import java.time.LocalDateTime;
 @TableName("T_SYSTEM_LOG")
 public class SystemLog {
     @TableId(value = "ID", type = IdType.AUTO)
-    private int id;
+    private Integer id;
     @TableField("CREATE_TIME")
     private LocalDateTime createTime;
     @TableField("SERVER")
     private String server;
+    @TableField("SERVER_PORT")
+    private String serverPort;
     @TableField("SERVER_IP")
     private String serverIP;
     @TableField("CLAZZ")

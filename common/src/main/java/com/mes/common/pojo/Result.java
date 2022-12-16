@@ -1,8 +1,12 @@
-package com.mes.common;
+package com.mes.common.pojo;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Getter
+@NoArgsConstructor
+@AllArgsConstructor
 public class Result<T> {
     /**
      * 成功代码
@@ -11,15 +15,15 @@ public class Result<T> {
     /**
      * 代码（0：成功，其他失败）
      */
-    private final int code;
+    private int code;
     /**
      * 返回信息
      */
-    private final String msg;
+    private String msg;
     /**
      * 返回数据
      */
-    private final T data;
+    private T data;
 
     public static <T> Result<T> success(T data) {
         return new Result<>(CODE_SUCCESS, "操作成功", data);
@@ -27,11 +31,5 @@ public class Result<T> {
 
     public static Result<Object> error(String msg) {
         return new Result<>(-1, msg, null);
-    }
-
-    private Result(int code, String msg, T data) {
-        this.code = code;
-        this.msg = msg;
-        this.data = data;
     }
 }

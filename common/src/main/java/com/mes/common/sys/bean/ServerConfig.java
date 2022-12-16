@@ -15,7 +15,7 @@ public class ServerConfig {
     /**
      * 当前服务的名称
      */
-    @Value("${spring.application.name}.replace('-service', '')")
+    @Value("${spring.application.name}")
     private String serverName;
     /**
      * 当前服务的端口
@@ -27,7 +27,7 @@ public class ServerConfig {
      * 当前服务的名称
      */
     public String getServerName() {
-        return serverName;
+        return serverName.replace("-service", "");
     }
 
     /**
