@@ -1,7 +1,7 @@
 package com.mes.system.log.web;
 
-import com.mes.common.log.dto.LogDTO;
-import com.mes.common.log.service.LogService;
+import com.mes.mvc.log.dto.LogDTO;
+import com.mes.mvc.log.service.LogService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;

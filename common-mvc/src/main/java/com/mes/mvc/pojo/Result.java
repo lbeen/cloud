@@ -1,4 +1,4 @@
-package com.mes.common.pojo;
+package com.mes.mvc.pojo;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -29,7 +29,7 @@ public class Result<T> {
         return new Result<>(CODE_SUCCESS, "操作成功", data);
     }
 
-    public static Result<Object> error(String msg) {
+    public static <T> Result<T> error(String msg) {
         return new Result<>(-1, msg, null);
     }
 }

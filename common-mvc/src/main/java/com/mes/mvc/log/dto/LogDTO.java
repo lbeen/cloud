@@ -1,4 +1,4 @@
-package com.mes.common.log.dto;
+package com.mes.mvc.log.dto;
 
 import lombok.Data;
 
@@ -11,8 +11,6 @@ public class LogDTO {
     private String serverIP;
     private String serverPort;
     private String clazz;
-    private String clientIP;
-    private String user;
     private int level;
     private String content;
 }

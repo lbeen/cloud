@@ -3,6 +3,11 @@ server:
 spring:
   application:
     name: view-service
+  datasource:
+    url: jdbc:oracle:thin:@10.2.0.171:1521:BSTEST
+    username: fc_mes
+    password: fc_mes
+    driver-class-name: oracle.jdbc.OracleDriver
   cloud:
     nacos:
       server-addr: 10.2.64.182:8841

@@ -4,16 +4,10 @@ spring:
   application:
     name: system-service
   datasource:
-    type: com.alibaba.druid.pool.DruidDataSource
     url: jdbc:oracle:thin:@10.2.0.171:1521:BSTEST
     username: fc_mes
     password: fc_mes
     driver-class-name: oracle.jdbc.OracleDriver
-    druid:
-      initial-size: 0
-      min-idle: 1
-      max-active: 5
-      max-wait: 60000
   cloud:
     nacos:
       server-addr: 10.2.64.182:8841

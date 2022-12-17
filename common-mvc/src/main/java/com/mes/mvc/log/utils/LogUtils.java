@@ -1,9 +1,9 @@
-package com.mes.common.log.utils;
+package com.mes.mvc.log.utils;
 
-import com.mes.common.log.dto.LogDTO;
-import com.mes.common.log.service.LogService;
 import com.mes.common.sys.utils.ServerUtils;
 import com.mes.common.sys.utils.SpringContextUtils;
+import com.mes.mvc.log.dto.LogDTO;
+import com.mes.mvc.log.service.LogService;
 
 /**
  * 日志工具类

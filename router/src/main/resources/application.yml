@@ -12,6 +12,12 @@ spring:
         namespace: public
     gateway:
       routes:
+        - id: system-router
+          uri: lb://system-service
+          predicates:
+            - Path=/system/**
+          filters:
+            - StripPrefix=1
         - id: view-router
           uri: lb://view-service
           predicates:
