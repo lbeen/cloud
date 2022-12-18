@@ -1,7 +1,6 @@
 package com.mes.router.filter;
 
 import com.mes.common.utils.AuthUtils;
-import io.jsonwebtoken.Claims;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
@@ -29,13 +28,13 @@ public class AuthFilter implements GlobalFilter, Ordered {
 
         String token = request.getHeaders().getFirst(AuthUtils.TOKEN_KEY);
         if (!StringUtils.hasText(token)) {
-            response.setStatusCode(HttpStatus.METHOD_NOT_ALLOWED);
+            response.setStatusCode(HttpStatus.UNAUTHORIZED);
             return response.setComplete();
         }
 
         //解析令牌数据
         try {
-            Claims claims = AuthUtils.parseToken(token);
+            AuthUtils.parseToken(token);
         } catch (Exception e) {
             e.printStackTrace();
             response.setStatusCode(HttpStatus.UNAUTHORIZED);

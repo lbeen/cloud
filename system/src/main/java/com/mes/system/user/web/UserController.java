@@ -24,8 +24,7 @@ public class UserController {
             Map<String, Object> subject = Maps.newHashMap();
             subject.put("username", username);
             String token = AuthUtils.createToken(JSON.toJSONString(subject));
-            LogUtils.logInfo(UserController.class, "登录成功：" + username);
-            return Result.success(Collections.singletonMap(AuthUtils.TOKEN_KEY, token));
+            return Result.success("登录成功", Collections.singletonMap(AuthUtils.TOKEN_KEY, token));
         }
         return Result.error("登录失败");
     }

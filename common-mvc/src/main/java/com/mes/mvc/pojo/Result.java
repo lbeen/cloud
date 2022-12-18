@@ -19,7 +19,7 @@ public class Result<T> {
     /**
      * 返回信息
      */
-    private String msg;
+    private String message;
     /**
      * 返回数据
      */
@@ -29,7 +29,11 @@ public class Result<T> {
         return new Result<>(CODE_SUCCESS, "操作成功", data);
     }
 
-    public static <T> Result<T> error(String msg) {
-        return new Result<>(-1, msg, null);
+    public static <T> Result<T> success(String message, T data) {
+        return new Result<>(CODE_SUCCESS, message, data);
+    }
+
+    public static <T> Result<T> error(String message) {
+        return new Result<>(-1, message, null);
     }
 }
