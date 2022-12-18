@@ -22,7 +22,7 @@ public class AuthUtils {
         SECRET_KEY = new SecretKeySpec(encodedKey, 0, encodedKey.length, "AES");
     }
 
-    public static String createJWT(String subject) {
+    public static String createToken(String subject) {
         //指定算法
         SignatureAlgorithm signatureAlgorithm = SignatureAlgorithm.HS256;
 
@@ -43,7 +43,7 @@ public class AuthUtils {
         return builder.compact();
     }
 
-    public static Claims parseJWT(String jwt) {
+    public static Claims parseToken(String jwt) {
         return Jwts.parser().setSigningKey(SECRET_KEY).parseClaimsJws(jwt).getBody();
     }
 }

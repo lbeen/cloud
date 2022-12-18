@@ -23,7 +23,7 @@ public class UserController {
         if ("admin".equals(username) && "123".equals(password)) {
             Map<String, Object> subject = Maps.newHashMap();
             subject.put("username", username);
-            String token = AuthUtils.createJWT(JSON.toJSONString(subject));
+            String token = AuthUtils.createToken(JSON.toJSONString(subject));
             LogUtils.logInfo(UserController.class, "登录成功：" + username);
             return Result.success(Collections.singletonMap(AuthUtils.TOKEN_KEY, token));
         }

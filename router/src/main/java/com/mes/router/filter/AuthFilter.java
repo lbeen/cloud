@@ -35,7 +35,7 @@ public class AuthFilter implements GlobalFilter, Ordered {
 
         //解析令牌数据
         try {
-            Claims claims = AuthUtils.parseJWT(token);
+            Claims claims = AuthUtils.parseToken(token);
         } catch (Exception e) {
             e.printStackTrace();
             response.setStatusCode(HttpStatus.UNAUTHORIZED);
