@@ -1,6 +1,6 @@
-package com.mes.common.sys.utils;
+package com.mes.common.server.utils;
 
-import com.mes.common.sys.bean.ServerConfig;
+import com.mes.common.server.bean.ServerConfig;
 
 public class ServerUtils {
     private static final ServerConfig SERVER_CONFIG = SpringContextUtils.getBean(ServerConfig.class);

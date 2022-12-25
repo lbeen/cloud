@@ -1,4 +1,4 @@
-package com.mes.common.sys.bean;
+package com.mes.common.server.bean;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;

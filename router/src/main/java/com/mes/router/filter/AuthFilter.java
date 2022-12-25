@@ -1,6 +1,7 @@
 package com.mes.router.filter;
 
 import com.mes.common.utils.AuthUtils;
+import io.jsonwebtoken.ExpiredJwtException;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
@@ -11,6 +12,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
+
+import java.util.Date;
 
 @Component
 public class AuthFilter implements GlobalFilter, Ordered {
@@ -26,6 +29,8 @@ public class AuthFilter implements GlobalFilter, Ordered {
             return chain.filter(exchange);
         }
 
+        response.getHeaders().add("response-time", Long.toString(new Date().getTime()));
+
         String token = request.getHeaders().getFirst(AuthUtils.TOKEN_KEY);
         if (!StringUtils.hasText(token)) {
             response.setStatusCode(HttpStatus.UNAUTHORIZED);
@@ -35,7 +40,7 @@ public class AuthFilter implements GlobalFilter, Ordered {
         //解析令牌数据
         try {
             AuthUtils.parseToken(token);
-        } catch (Exception e) {
+        } catch (ExpiredJwtException e) {
             e.printStackTrace();
             response.setStatusCode(HttpStatus.UNAUTHORIZED);
             return response.setComplete();
@@ -49,5 +54,6 @@ public class AuthFilter implements GlobalFilter, Ordered {
     public int getOrder() {
         return 0;
     }
+
 }
 

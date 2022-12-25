@@ -1,4 +1,4 @@
-package com.mes.common.sys.constants;
+package com.mes.common.server.constants;
 
 public class Servers {
     public static final String SYSTEM = "system-service";

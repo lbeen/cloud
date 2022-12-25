@@ -1,4 +1,4 @@
-package com.mes.common.sys.utils;
+package com.mes.common.server.utils;
 
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;

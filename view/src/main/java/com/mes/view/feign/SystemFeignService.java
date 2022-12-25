@@ -1,6 +1,6 @@
 package com.mes.view.feign;
 
-import com.mes.common.sys.constants.Servers;
+import com.mes.common.server.constants.Servers;
 import com.mes.mvc.log.dto.LogDTO;
 import com.mes.mvc.log.service.LogService;
 import org.springframework.cloud.openfeign.FeignClient;

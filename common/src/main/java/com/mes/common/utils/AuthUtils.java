@@ -10,9 +10,9 @@ import java.util.Base64;
 import java.util.Date;
 
 public class AuthUtils {
-    public static final String TOKEN_KEY = "token";
+    public static final String TOKEN_KEY = "access_token";
 
-    public static final Long JWT_TTL = 3600000L;
+    public static final Long EXPIRE_DURATION = 30000L;
 
     public static final SecretKeySpec SECRET_KEY;
 
@@ -23,23 +23,13 @@ public class AuthUtils {
     }
 
     public static String createToken(String subject) {
-        //指定算法
-        SignatureAlgorithm signatureAlgorithm = SignatureAlgorithm.HS256;
-
-        //当前系统时间
-        long nowMillis = System.currentTimeMillis();
-        //令牌签发时间
-        Date now = new Date(nowMillis);
-
-        //令牌过期时间设置
-        long expMillis = nowMillis + JWT_TTL;
-        Date expDate = new Date(expMillis);
-
+        Date now = new Date();
+        Date expireDate = new Date(now.getTime() + EXPIRE_DURATION);
         //封装Jwt令牌信息
-        JwtBuilder builder = Jwts.builder().setSubject(subject) // 主题  可以是JSON数据
+        JwtBuilder builder = Jwts.builder().setSubject(subject) // 主题 可以是JSON数据
                 .setIssuedAt(now)                               // 签发时间
-                .signWith(signatureAlgorithm, SECRET_KEY)       // 签名算法以及密匙
-                .setExpiration(expDate);                        // 设置过期时间
+                .signWith(SignatureAlgorithm.HS256, SECRET_KEY)       // 签名算法以及密匙
+                .setExpiration(expireDate);                        // 设置过期时间
         return builder.compact();
     }
 

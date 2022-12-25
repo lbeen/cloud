@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mes.system.log.mapper.LogMapper">
+    <select id="cutoffYield" parameterType="Map" resultType="double">
+        SELECT ROUND(SUM(WEIGHT)/1000,1) V FROM <include refid="cutOffYieldSql"/>
+    </select>
+    <select id="cutoffYieldByEquipment" parameterType="Map" resultType="Record">
+        SELECT
+            EQUIPMENT K,ROUND(SUM(WEIGHT)/1000,1) V
+        FROM <include refid="cutOffYieldSql"/>
+        GROUP BY EQUIPMENT
+    </select>
+    <select id="cutoffYieldByShiftSpec" parameterType="Map" resultType="Record">
+        SELECT
+            GET_DAY_SHIFT(ACTION_TIME) K1,SPEC_S K2,ROUND(SUM(WEIGHT)/1000,1) V
+        FROM <include refid="cutOffYieldSql"/>
+        GROUP BY GET_DAY_SHIFT(ACTION_TIME),SPEC_S
+    </select>
+    <select id="cutoffYieldByShiftEquipment" parameterType="Map" resultType="Record">
+        SELECT
+            GET_DAY_SHIFT(ACTION_TIME) K1,EQUIPMENT K2,ROUND(SUM(WEIGHT)/1000,1) V
+        FROM <include refid="cutOffYieldSql"/>
+            WHERE LENGTH(EQUIPMENT)=6
+        GROUP BY GET_DAY_SHIFT(ACTION_TIME),EQUIPMENT
+    </select>
+
+    <sql id="buttYieldSql">
+        (SELECT
+            C.ACTION_TIME,C.EQUIPMENT,C.PART_NUMBER SPEC_S,C.LENGTH_BUTT/CO.SQUARE_STANDARD_F WEIGHT
+        FROM IF_CCS_BUTT_WIP C JOIN AT_MM_CONVERSION CO ON CO.SPEC_S=C.PART_NUMBER
+        WHERE C.ACTION_TIME>=#{startTime} AND C.ACTION_TIME&lt;=#{endTime}
+        <if test="workshop != null">
+            AND C.MACSHOP=#{workshop}
+        </if>
+        AND C.STATU='OFF' AND C.EQUIPMENT!='0')
+    </sql>
+    <select id="buttYield" parameterType="Map" resultType="double">
+        SELECT ROUND(SUM(WEIGHT)/1000,1) V FROM <include refid="buttYieldSql"/>
+    </select>
+    <select id="buttYieldByEquipment" parameterType="Map" resultType="Record">
+        SELECT
+            EQUIPMENT K,ROUND(SUM(WEIGHT)/1000,1) V
+        FROM <include refid="buttYieldSql"/>
+        GROUP BY EQUIPMENT
+    </select>
+    <select id="buttYieldByShiftSpec" parameterType="Map" resultType="Record">
+        SELECT
+        GET_DAY_SHIFT(ACTION_TIME) K1,SPEC_S K2,ROUND(SUM(WEIGHT)/1000,1) V
+        FROM <include refid="buttYieldSql"/>
+        GROUP BY GET_DAY_SHIFT(ACTION_TIME),SPEC_S
+    </select>
+
+    <sql id="polishingYieldSql">
+        (SELECT
+            C.ACTION_TIME,C.EQUIPMENT,C.PART_NUMBER SPEC_S,C.POLISHING_LENGTH/CO.SQUARE_STANDARD_F WEIGHT
+        FROM IF_CCS_POLISHING_WIP C JOIN AT_MM_CONVERSION CO ON CO.SPEC_S=C.PART_NUMBER
+        WHERE C.ACTION_TIME>=#{startTime} AND C.ACTION_TIME&lt;=#{endTime}
+        <if test="workshop != null">
+            AND C.MACSHOP=#{workshop}
+        </if>
+        AND C.STATU='OFF' AND C.EQUIPMENT!='0')
+    </sql>
+    <select id="polishingYield" parameterType="Map" resultType="double">
+        SELECT ROUND(SUM(WEIGHT)/1000,1) V FROM <include refid="polishingYieldSql"/>
+    </select>
+    <select id="polishingYieldByEquipment" parameterType="Map" resultType="Record">
+        SELECT
+            EQUIPMENT K,ROUND(SUM(WEIGHT)/1000,1) V
+        FROM <include refid="polishingYieldSql"/>
+        GROUP BY EQUIPMENT
+    </select>
+    <select id="polishingYieldByShiftSpec" parameterType="Map" resultType="Record">
+        SELECT
+        GET_DAY_SHIFT(ACTION_TIME) K1,SPEC_S K2,ROUND(SUM(WEIGHT)/1000,1) V
+        FROM <include refid="polishingYieldSql"/>
+        GROUP BY GET_DAY_SHIFT(ACTION_TIME),SPEC_S
+    </select>
+
+    <sql id="finishYieldSql">
+        (SELECT
+            S.CREATION_TIME ACTION_TIME,S.SPEC_S,S.METER_WEIGHING_F WEIGHT
+        FROM AT_PM_SILICONRODSDETAIL S
+        WHERE S.CREATION_TIME>=#{startTime} AND S.CREATION_TIME&lt;=#{endTime}
+        <if test="workshop != null">
+            AND S.AREA_S=#{workshop}
+        </if>)
+    </sql>
+    <select id="finishYield" parameterType="Map" resultType="double">
+        SELECT
+            ROUND(SUM(S.METER_WEIGHING_F)/1000,1) V
+        FROM AT_PM_SILICONRODSDETAIL S JOIN AT_PM_SILICONRODSRECORD R ON R.MAIN_KEY_I=S.ATR_KEY
+        WHERE R.FIRST_TIME_T>=#{startTime} AND R.FIRST_TIME_T&lt;=#{endTime}
+        AND SUBSTR(S.CRYSTAL_NUMBER_S, 13, 1) NOT IN ('T','U','V')
+    </select>
+    <select id="finishYieldBySpec" parameterType="Map" resultType="Record">
+        SELECT
+        SPEC_S K,ROUND(SUM(WEIGHT)/1000,1) V
+        FROM <include refid="finishYieldSql"/>
+        GROUP BY SPEC_S
+    </select>
+    <select id="finishYieldByShiftSpec" parameterType="Map" resultType="Record">
+        SELECT
+        GET_DAY_SHIFT(ACTION_TIME) K1,SPEC_S K2,ROUND(SUM(WEIGHT)/1000,1) V
+        FROM <include refid="finishYieldSql"/>
+        GROUP BY GET_DAY_SHIFT(ACTION_TIME),SPEC_S
+    </select>
+</mapper>

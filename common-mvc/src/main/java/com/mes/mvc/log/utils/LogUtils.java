@@ -1,7 +1,7 @@
 package com.mes.mvc.log.utils;
 
-import com.mes.common.sys.utils.ServerUtils;
-import com.mes.common.sys.utils.SpringContextUtils;
+import com.mes.common.server.utils.ServerUtils;
+import com.mes.common.server.utils.SpringContextUtils;
 import com.mes.mvc.log.dto.LogDTO;
 import com.mes.mvc.log.service.LogService;
 
