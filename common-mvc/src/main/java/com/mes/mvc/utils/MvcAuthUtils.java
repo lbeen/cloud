@@ -1,9 +1,8 @@
 package com.mes.mvc.utils;
 
-import com.alibaba.fastjson2.JSON;
 import com.google.common.net.HttpHeaders;
+import com.mes.common.system.dto.TokenUserInfo;
 import com.mes.common.utils.AuthUtils;
-import io.jsonwebtoken.Claims;
 import org.springframework.util.StringUtils;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -12,16 +11,18 @@ import javax.servlet.http.HttpServletRequest;
 
 public class MvcAuthUtils {
     public static String getUsername() {
-        String jwt = getToken();
-        if (!StringUtils.hasText(jwt)) {
+        TokenUserInfo userinfo = getUserInfo();
+        if (userinfo == null) {
             return null;
         }
-        Claims claims = AuthUtils.parseToken(jwt);
-        String subject = claims.getSubject();
-        if (!StringUtils.hasText(subject)) {
+        return userinfo.getUsername();
+    }
+    public static TokenUserInfo getUserInfo() {
+        String token = getToken();
+        if (!StringUtils.hasText(token)) {
             return null;
         }
-        return JSON.parseObject(subject).getString("username");
+        return AuthUtils.getUserInfo(token);
     }
 
     public static String getToken() {
