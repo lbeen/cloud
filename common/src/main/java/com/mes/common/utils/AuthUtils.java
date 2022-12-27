@@ -16,7 +16,7 @@ public class AuthUtils {
     public static final String TOKEN_KEY = "token";
     public static final String USER_KEY = "user";
 
-    public static final Long EXPIRE_DURATION = 30000L;
+    public static final Long EXPIRE_DURATION = 1800000L;
 
     public static final SecretKeySpec SECRET_KEY;
 
