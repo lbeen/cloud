@@ -38,11 +38,4 @@ public class UserController {
         userService.changePassword(userInfo.getId(), userDTO.getPassword());
         return Result.message("保存成功");
     }
-
-    @GetMapping("getUser")
-    public Result<Object> getUser(String id) {
-        LambdaQueryWrapper<SystemUser> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(SystemUser::getId, id);
-        return Result.success(userService.getById(id));
-    }
 }
