@@ -2,6 +2,7 @@ package com.mes.mvc.pojo;
 
 import lombok.Getter;
 
+import javax.validation.constraints.NotBlank;
 import java.util.Collections;
 import java.util.List;
 

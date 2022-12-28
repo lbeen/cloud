@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.validation.Valid;
 import java.util.Map;
 
 @RequiredArgsConstructor
@@ -24,7 +25,7 @@ public class LoginController {
     private final UserService userService;
 
     @PostMapping("login")
-    public Result<Map<String, Object>> login(@RequestBody UserDTO userDTO) {
+    public Result<Map<String, Object>> login(@RequestBody @Valid UserDTO userDTO) {
         SystemUser systemUser = userService.getUserByUsername(userDTO.getUsername());
         if (systemUser == null) {
             return Result.error("用户不存在");

@@ -1,6 +1,7 @@
 package com.mes.system.user.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.mes.common.system.dto.UserDTO;
 import com.mes.system.user.entity.SystemUser;
@@ -26,5 +27,14 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, SystemUser> impleme
         SystemUser systemUser = new SystemUser();
         BeanUtils.copyProperties(userDTO, systemUser);
         save(systemUser);
+    }
+
+    @Transactional
+    @Override
+    public void changePassword(String id, String password) {
+        LambdaUpdateWrapper<SystemUser> wrapper = new LambdaUpdateWrapper<>();
+        wrapper.eq(SystemUser::getId, id);
+        wrapper.set(SystemUser::getPassword, password);
+        update(wrapper);
     }
 }

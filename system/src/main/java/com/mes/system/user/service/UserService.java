@@ -8,4 +8,6 @@ public interface UserService extends IService<SystemUser> {
     SystemUser getUserByUsername(String username);
 
     void saveUser(UserDTO userDTO);
+
+    void changePassword(String id, String password);
 }

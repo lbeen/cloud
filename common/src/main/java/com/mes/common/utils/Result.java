@@ -25,6 +25,10 @@ public class Result<T> {
      */
     private T data;
 
+    public static <T> Result<T> message(String message) {
+        return success(message, null);
+    }
+
     public static <T> Result<T> success(T data) {
         return success(null, data);
     }
