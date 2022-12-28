@@ -30,7 +30,6 @@ public class AuthFilter implements GlobalFilter, Ordered {
 
         String path = request.getURI().getPath();
         if (path.startsWith("/system/login") || path.startsWith("/system/refreshToken")) {
-            setResponseTime(response);
             return chain.filter(exchange);
         }
 
@@ -47,12 +46,7 @@ public class AuthFilter implements GlobalFilter, Ordered {
             return setNoAuth(response);
         }
 
-        setResponseTime(response);
         return chain.filter(exchange);
-    }
-
-    private void setResponseTime(ServerHttpResponse response) {
-        response.getHeaders().add("response-time", Long.toString(new Date().getTime()));
     }
 
     private Mono<Void> setNoAuth(ServerHttpResponse response) {

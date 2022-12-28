@@ -6,6 +6,7 @@ import com.mes.common.utils.Result;
 import com.mes.mvc.utils.MvcAuthUtils;
 import com.mes.system.user.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -36,5 +37,12 @@ public class UserController {
         }
         userService.changePassword(userInfo.getId(), userDTO.getPassword());
         return Result.message("保存成功");
+    }
+
+    @GetMapping("getUser")
+    public Result<Object> getUser(String id) {
+        LambdaQueryWrapper<SystemUser> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(SystemUser::getId, id);
+        return Result.success(userService.getById(id));
     }
 }
