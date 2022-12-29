@@ -36,7 +36,7 @@ public class LogController {
         param.put("endTime", endTime);
         param.put("user", user);
         param.put("level", level);
-        param.put("content", content);
+        param.put("content", "%" + content + "%");
         return Result.success(systemLogService.queryLogPage(param));
     }
 }

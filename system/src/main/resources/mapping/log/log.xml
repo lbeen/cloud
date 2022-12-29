@@ -15,7 +15,7 @@
             AND LOG_LEVEL=#{level}
         </if>
         <if test="content != null and content != ''">
-            AND LOG_CONTENT=#{content}
+            AND LOG_CONTENT LIKE #{content}
         </if>
     </sql>
     <select id="queryLogCount" parameterType="Map" resultType="int">
