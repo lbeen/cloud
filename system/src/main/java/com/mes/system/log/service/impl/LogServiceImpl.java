@@ -11,11 +11,10 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class LogServiceImpl extends ServiceImpl<LogMapper, SystemLog> implements LogService {
+    @Override
     public int saveLog(LogDTO logDTO) {
         SystemLog systemLog = new SystemLog();
         BeanUtils.copyProperties(logDTO, systemLog);
-        systemLog.setClientIP(MvcAuthUtils.getClientIP());
-        systemLog.setUser(MvcAuthUtils.getUsername());
         save(systemLog);
         return systemLog.getId();
     }

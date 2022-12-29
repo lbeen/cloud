@@ -5,6 +5,7 @@ import com.mes.common.server.utils.ServerUtils;
 import com.mes.common.server.utils.SpringContextUtils;
 import com.mes.mvc.log.dto.LogDTO;
 import com.mes.mvc.log.service.LogService;
+import com.mes.mvc.utils.MvcAuthUtils;
 
 /**
  * 日志工具类
@@ -12,11 +13,15 @@ import com.mes.mvc.log.service.LogService;
 public class LogUtils {
     private static final LogService LOG_SERVICE = SpringContextUtils.getBean(LogService.class);
 
-    public static int logInfo(Class<?> clazz, String content) {
-        return log(clazz, LogDTO.LEVEL_INFO, content);
+    public static int logInfo(String content) {
+        return log(MvcAuthUtils.getUsername(), LogDTO.LEVEL_INFO, content);
     }
 
-    public static int logError(Class<?> clazz, Throwable throwable) {
+    public static int logInfo(String username, String content) {
+        return log(username, LogDTO.LEVEL_INFO, content);
+    }
+
+    public static int logError(Throwable throwable) {
         StringBuilder content = new StringBuilder().append(throwable.getMessage());
 
         StackTraceElement[] stackTraces = throwable.getStackTrace();
@@ -29,15 +34,16 @@ public class LogUtils {
                 }
             }
         }
-        return log(clazz, LogDTO.LEVEL_ERROR, content.toString());
+        return log(MvcAuthUtils.getUsername(), LogDTO.LEVEL_ERROR, content.toString());
     }
 
-    private static int log(Class<?> clazz, int level, String content) {
+    private static int log(String user, int level, String content) {
         LogDTO logDTO = new LogDTO();
         logDTO.setServer(ServerUtils.serverName());
         logDTO.setServerIP(ServerUtils.serverIP());
         logDTO.setServerPort(ServerUtils.serverPort());
-        logDTO.setClazz(clazz.getSimpleName());
+        logDTO.setUser(user);
+        logDTO.setClientIP(MvcAuthUtils.getClientIP());
         logDTO.setLevel(level);
         logDTO.setContent(content);
         return LOG_SERVICE.saveLog(logDTO);

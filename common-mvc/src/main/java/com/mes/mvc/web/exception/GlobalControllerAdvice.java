@@ -19,7 +19,7 @@ public class GlobalControllerAdvice {
             return Result.error(message);
         }
 
-        int logId = LogUtils.logError(GlobalControllerAdvice.class, throwable);
+        int logId = LogUtils.logError(throwable);
         String message = "系统错误，日志：" + logId;
         return Result.error(message);
     }

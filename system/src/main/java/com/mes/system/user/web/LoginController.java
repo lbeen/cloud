@@ -5,6 +5,7 @@ import com.mes.common.system.dto.TokenUserInfo;
 import com.mes.common.system.dto.UserDTO;
 import com.mes.common.utils.AuthUtils;
 import com.mes.common.utils.Result;
+import com.mes.mvc.log.utils.LogUtils;
 import com.mes.mvc.utils.MvcAuthUtils;
 import com.mes.system.user.entity.SystemUser;
 import com.mes.system.user.service.UserService;
@@ -34,13 +35,15 @@ public class LoginController {
             return Result.error("用户密码错误");
         }
 
-        TokenUserInfo tokenUserInfo = new TokenUserInfo();
-        BeanUtils.copyProperties(systemUser, tokenUserInfo);
-        String token = AuthUtils.createToken(tokenUserInfo);
+        TokenUserInfo userInfo = new TokenUserInfo();
+        BeanUtils.copyProperties(systemUser, userInfo);
+        String token = AuthUtils.createToken(userInfo);
 
         Map<String, Object> data = Maps.newHashMap();
         data.put(AuthUtils.TOKEN_KEY, token);
-        data.put(AuthUtils.USER_KEY, tokenUserInfo);
+        data.put(AuthUtils.USER_KEY, userInfo);
+
+        LogUtils.logInfo(userInfo.getUsername(), "登录成功");
         return Result.success(data);
     }
 
@@ -52,6 +55,8 @@ public class LoginController {
         }
 
         String token = AuthUtils.createToken(tokenUserInfo);
+
+        LogUtils.logInfo(userInfo.getUsername(), "刷新token");
         return Result.success(token);
     }
 }

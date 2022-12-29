@@ -21,8 +21,6 @@ public class SystemLog {
     private String serverPort;
     @TableField("SERVER_IP")
     private String serverIP;
-    @TableField("CLAZZ")
-    private String clazz;
     @TableField("CLIENT_IP")
     private String clientIP;
     @TableField("OPERATE_USER")

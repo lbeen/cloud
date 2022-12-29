@@ -18,7 +18,7 @@ public class UserController {
     @RequestMapping("get")
     public Map<String, String> get(String id) {
         System.out.println(MvcAuthUtils.getUsername());
-        LogUtils.logInfo(UserController.class, "获取用户id=" + id);
+        LogUtils.logInfo("获取用户id=" + id);
         return userFeignService.get(id);
     }
 }

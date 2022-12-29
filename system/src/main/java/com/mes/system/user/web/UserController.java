@@ -6,7 +6,6 @@ import com.mes.common.utils.Result;
 import com.mes.mvc.utils.MvcAuthUtils;
 import com.mes.system.user.service.UserService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
