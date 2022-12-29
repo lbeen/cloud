@@ -6,10 +6,12 @@ import com.mes.common.server.utils.SpringContextUtils;
 import com.mes.mvc.log.dto.LogDTO;
 import com.mes.mvc.log.service.LogService;
 import com.mes.mvc.utils.MvcAuthUtils;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * 日志工具类
  */
+@Slf4j
 public class LogUtils {
     private static final LogService LOG_SERVICE = SpringContextUtils.getBean(LogService.class);
 
@@ -22,6 +24,8 @@ public class LogUtils {
     }
 
     public static int logError(Throwable throwable) {
+        log.error("记录错误日志", throwable);
+
         StringBuilder content = new StringBuilder().append(throwable.getMessage());
 
         StackTraceElement[] stackTraces = throwable.getStackTrace();

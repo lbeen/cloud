@@ -1,6 +1,5 @@
 package com.mes.mvc.utils;
 
-import com.baomidou.mybatisplus.core.toolkit.IdWorker;
 import com.mes.mvc.pojo.Page;
 import com.mes.mvc.pojo.Record;
 
@@ -9,11 +8,6 @@ import java.util.Map;
 import java.util.function.Function;
 
 public class PageUtils {
-
-    public static void main(String[] args) {
-        System.out.println(IdWorker.getIdStr().length());
-        System.out.println(Long.toString(IdWorker.getId()).length());
-    }
 
     public static Page getPage(Function<Map<String, Object>, Integer> countFun,
                                Function<Map<String, Object>, List<Record>> listFun, Map<String, Object> param) {
