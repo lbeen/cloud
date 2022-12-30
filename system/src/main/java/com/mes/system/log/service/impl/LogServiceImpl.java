@@ -22,6 +22,7 @@ public class LogServiceImpl extends ServiceImpl<LogMapper, SystemLog> implements
         return systemLog.getId();
     }
 
+    @Override
     public Page queryLogPage(Map<String, Object> param) {
         return PageUtils.getPage(this.baseMapper::queryLogCount, this.baseMapper::queryLogPage, param);
     }

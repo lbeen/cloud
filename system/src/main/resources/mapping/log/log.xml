@@ -30,6 +30,6 @@
             ROW_NUMBER() OVER (ORDER BY CREATE_TIME DESC) RN,
             ID,CREATE_TIME,SERVER,OPERATE_USER,LOG_LEVEL,LOG_CONTENT
         FROM T_SYSTEM_LOG <include refid="logPageWhere"/>)
-        WHERE RN>#{start} AND RN&lt;#{end}
+        WHERE RN>#{start} AND RN&lt;=#{end}
     </select>
 </mapper>

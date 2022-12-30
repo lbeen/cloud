@@ -24,9 +24,9 @@ public class SystemLog {
     @TableField("CLIENT_IP")
     private String clientIP;
     @TableField("OPERATE_USER")
-    private String user;
+    private String operateUser;
     @TableField("LOG_LEVEL")
-    private int level;
+    private int logLevel;
     @TableField("LOG_CONTENT")
-    private String content;
+    private String logContent;
 }
