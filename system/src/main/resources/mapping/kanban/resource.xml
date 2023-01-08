@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mes.system.kanban.mapper.KanbanResourceMapper">
+    <sql id="resourcePageWhere">
+        <where>
+            <if test="factory != null and factory != ''">
+                AND FACTORY=#{server}
+            </if>
+            <if test="type != null and type != ''">
+                AND RESOURCE_TYPE=#{type}
+            </if>
+            <if test="name != null and name != ''">
+                AND RESOURCE_NAME LIKE #{name}
+            </if>
+        </where>
+    </sql>
+    <select id="queryResourceCount" parameterType="Map" resultType="int">
+        SELECT COUNT(1) FROM T_SYSTEM_KANBAN_RESOURCE <include refid="resourcePageWhere"/>
+    </select>
+    <select id="queryResourcePage" parameterType="Map" resultType="Record">
+        SELECT
+            RN,ID,FACTORY,RESOURCE_NAME,RESOURCE_TYPE,RESOURCE_LOCATION,RESOURCE_COUNT,RESOURCE_DURATION
+        FROM
+            (SELECT
+                ROW_NUMBER() OVER (ORDER BY CREATE_TIME DESC) RN,
+                ID,FACTORY,RESOURCE_NAME,RESOURCE_TYPE,RESOURCE_LOCATION,RESOURCE_COUNT,RESOURCE_DURATION
+            FROM T_SYSTEM_KANBAN_RESOURCE <include refid="resourcePageWhere"/>)
+        WHERE RN>#{start} AND RN&lt;=#{end}
+    </select>
+</mapper>

@@ -29,7 +29,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, SystemUser> impleme
         save(systemUser);
     }
 
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public void changePassword(String id, String password) {
         LambdaUpdateWrapper<SystemUser> wrapper = new LambdaUpdateWrapper<>();

@@ -9,7 +9,21 @@
         "name": "/system/log",
         "icon": "document",
         "keepAlive": true,
-        "component": "/views/system/log.vue"
+        "component": "/views/system/log/log.vue"
+      },
+      {
+        "title": "看板管理",
+        "icon": "monitor",
+        "children": [
+          {
+            "title": "看板资源",
+            "path": "/system/kanban/resource",
+            "name": "/system/kanban/resource",
+            "icon": "document",
+            "keepAlive": true,
+            "component": "/views/system/kanban/resource.vue"
+          }
+        ]
       }
     ]
   }
