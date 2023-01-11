@@ -49,7 +49,7 @@ public class LoginController {
         data.put(AuthUtils.USER_KEY, userInfo);
 
         String json = Files.toString(
-                new File("E:\\WorkSpace\\cloud\\system\\src\\main\\java\\com\\mes\\system\\user\\web\\admin.json"),
+                new File("C:\\workspace\\cloud\\system\\src\\main\\java\\com\\mes\\system\\user\\web\\admin.json"),
                 StandardCharsets.UTF_8);
         data.put("menus", JSON.parseArray(json));
 
