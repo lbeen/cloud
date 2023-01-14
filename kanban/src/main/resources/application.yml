@@ -1,0 +1,34 @@
+server:
+  port: 8021
+spring:
+  application:
+    name: kanban-service
+  datasource:
+    dynamic:
+#      primary: bs-dg
+      strict: true
+      datasource:
+        bs-dg:
+          url: jdbc:oracle:thin:@//10.2.64.185/BSMES
+          username: mesprod
+          password: bsmes2019
+          driver-class-name: oracle.jdbc.OracleDriver
+          hikari:
+            max-pool-size: 5
+        tc-dg:
+          url: jdbc:oracle:thin:@//10.2.0.165:1521/tcmes
+          username: TCMES
+          password: tc2021MESLongi
+          driver-class-name: oracle.jdbc.OracleDriver
+          hikari:
+            max-pool-size: 5
+  cloud:
+    nacos:
+      server-addr: 10.2.64.182:8841
+      discovery:
+        username: nacos
+        password: nacos
+        namespace: public
+mybatis-plus:
+  config-location: classpath:mybatis-config.xml
+  mapper-locations: classpath:mapping/**/*.xml

@@ -18,9 +18,9 @@ spring:
             - Path=/system/**
           filters:
             - StripPrefix=1
-        - id: view-router
-          uri: lb://view-service
+        - id: kanban-router
+          uri: lb://kanban-service
           predicates:
-            - Path=/view/**
+            - Path=/kanban/**
           filters:
             - StripPrefix=1

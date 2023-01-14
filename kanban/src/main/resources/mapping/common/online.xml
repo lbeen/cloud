@@ -1,0 +1,358 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mes.kanban.common.mapper.OnlineMapper">
+    <sql id="maoOnlineSql">
+        (SELECT
+             M.CREATION_TIME,M.RECEIVE_TIME_T,M.CRYSTAL_NUMBER_S,C.SPEC_S
+         FROM AT_PM_MAOBARRECORD M
+            JOIN AT_PM_CRYSTALRODSORDER C ON C.CRYSTAL_NUMBER_S=M.CRYSTAL_NUMBER_S
+            LEFT JOIN AT_PM_LINEATIONANDDETECTION L ON L.CRYSTAL_NUMBER_S=M.CRYSTAL_NUMBER_S
+         WHERE M.CREATION_TIME>SYSDATE-60 AND C.AREA_S=#{workshop}  AND L.ATR_KEY IS NULL)
+    </sql>
+    <select id="maoOnlineStatistics" parameterType="Map" resultType="Record">
+        SELECT
+            WORKSHOP K1,ONLINE_TYPE K2,COUNT(1) V
+        FROM
+            (SELECT
+                 GET_SHOP_BYCN(CRYSTAL_NUMBER_S) WORKSHOP,
+                 (CASE
+                    WHEN RECEIVE_TIME_T IS NULL THEN
+                        CASE
+                            WHEN CREATION_TIME > SYSDATE - 1 / 24 THEN '未接收_&lt;1小时'
+                            WHEN CREATION_TIME > SYSDATE - 2 / 24 THEN '未接收_1-2小时'
+                            WHEN CREATION_TIME > SYSDATE - 3 / 24 THEN '未接收_2-3小时'
+                            WHEN CREATION_TIME > SYSDATE - 4 / 24 THEN '未接收_3-4小时'
+                            WHEN CREATION_TIME > SYSDATE - 5 / 24 THEN '未接收_4-5小时'
+                            ELSE '未接收_≥5小时'
+                        END
+                        ELSE
+                        CASE
+                            WHEN RECEIVE_TIME_T > SYSDATE - 1 / 24 THEN '未划线_&lt;1小时'
+                            WHEN RECEIVE_TIME_T > SYSDATE - 2 / 24 THEN '未划线_1-2小时'
+                            WHEN RECEIVE_TIME_T > SYSDATE - 3 / 24 THEN '未划线_2-3小时'
+                            WHEN RECEIVE_TIME_T > SYSDATE - 4 / 24 THEN '未划线_3-4小时'
+                            WHEN RECEIVE_TIME_T > SYSDATE - 5 / 24 THEN '未划线_4-5小时'
+                            ELSE '未划线_≥5小时'
+                        END
+                END) ONLINE_TYPE
+             FROM <include refid="maoOnlineSql"/>)
+        WHERE ONLINE_TYPE IS NOT NULL GROUP BY ONLINE_TYPE,WORKSHOP
+    </select>
+    <select id="maoOnlineList" parameterType="Map" resultType="Record">
+        SELECT
+            SUBSTR(GET_SHOP_BYCN(CRYSTAL_NUMBER_S),4) AREA,CRYSTAL_NUMBER_S,SPEC_S,
+            TO_CHAR(CREATION_TIME,'YYYY-MM-DD HH24:MI:SS') CREATION_TIME,
+            ROUND((SYSDATE-CAST(CREATION_TIME AS DATE))*24,0)||'h' DURATION
+        FROM <include refid="maoOnlineSql"/>
+        WHERE CREATION_TIME>#{startTime} AND CREATION_TIME&lt;#{endTime}
+          AND RECEIVE_TIME_T IS NULL
+        ORDER BY CREATION_TIME
+    </select>
+
+    <sql id="cutoffOnlineSql">
+        (SELECT
+             L.CREATION_TIME,L.CRYSTAL_NUMBER_S,L.SPEC_S,NVL(L.DISLOCATION_FREE_LENGTH_F,0) CRYSTAL_LENGTH,
+             L.IS_FINISH_S IS_FINISH,L.CALCULATE_WEIGHT_F
+         FROM AT_PM_LINEATIONANDDETECTION L
+         WHERE L.CREATION_TIME>SYSDATE-60
+        <if test="workshop != null">
+            AND L.SPARE_1_S=#{workshop}
+        </if>
+           AND L.CRYSTALLINE_SITUATION_I NOT IN (4,5)
+           AND NOT EXISTS (SELECT 1 FROM IF_CCS_CUTOFF_WIP WHERE CRYSTAL_NUMBER=L.CRYSTAL_NUMBER_S AND STATU='OFF')
+           AND EXISTS (SELECT 1 FROM AT_PM_WORKBLANKLINEATION
+                       WHERE WORKBLANK_NUMBER_S=L.CRYSTAL_NUMBER_S AND TRIAL_PROCESSING_I NOT IN (7)))
+    </sql>
+    <sql id="cutoffOnlineInProcessSql">
+        (SELECT
+            SPEC_S,CALCULATE_WEIGHT_F,
+            CASE WHEN EXISTS (SELECT 1 FROM IF_CCS_CUTOFF_WIP WHERE CRYSTAL_NUMBER=T.CRYSTAL_NUMBER_S
+            AND STATU='ON' AND EQUIPMENT!='0') THEN 1 ELSE 0 END IN_PROCESS
+        FROM <include refid="cutoffOnlineSql"/> T)
+    </sql>
+    <select id="cutoffOnlineStatisticsAllMass"  parameterType="Map" resultType="Record">
+        SELECT
+            ROUND(SUM(DECODE(IN_PROCESS,0,CALCULATE_WEIGHT_F,0))/1000,2) WEIGHT,
+            ROUND(SUM(DECODE(IN_PROCESS,1,CALCULATE_WEIGHT_F,0))/1000,2) IN_PROCESS
+        FROM <include refid="cutoffOnlineInProcessSql"/> T
+        JOIN AT_QM_RESALONG R ON R.SPEC_S=T.SPEC_S AND R.ISPRODUCTION_S='是'
+    </select>
+    <select id="cutoffOnlineStatisticsMass" resultType="Record">
+        SELECT
+            T.SPEC_S K,SUM(DECODE(IN_PROCESS,0,1,0)) V1,SUM(DECODE(IN_PROCESS,1,1,0)) V2
+        FROM <include refid="cutoffOnlineInProcessSql"/> T
+        JOIN AT_QM_RESALONG R ON R.SPEC_S=T.SPEC_S AND R.ISPRODUCTION_S='是' GROUP BY T.SPEC_S
+    </select>
+    <select id="cutoffOnlineStatistics"  parameterType="Map" resultType="Record">
+        SELECT SPEC_S K,COUNT(1) V FROM <include refid="cutoffOnlineSql"/> GROUP BY SPEC_S
+    </select>
+    <select id="cutoffOnlineList"  parameterType="Map" resultType="Record">
+        SELECT
+            L.CRYSTAL_NUMBER_S,L.SPEC_S,L.CRYSTAL_LENGTH,L.IS_FINISH,
+            ROUND((SYSDATE-CAST(M.RECEIVE_TIME_T AS DATE))*24,0)||'h' DURATION
+         FROM <include refid="cutoffOnlineSql"/> L
+            JOIN AT_PM_MAOBARRECORD M ON M.CRYSTAL_NUMBER_S=L.CRYSTAL_NUMBER_S
+        WHERE M.RECEIVE_TIME_T&lt;SYSDATE-2/24 ORDER BY M.RECEIVE_TIME_T
+    </select>
+    <select id="cutoffOnlineListBS"  parameterType="Map" resultType="Record">
+        SELECT
+            L.CRYSTAL_NUMBER_S,L.SPEC_S,L.CRYSTAL_LENGTH,L.IS_FINISH,
+            ROUND((SYSDATE-CAST(M.CREATION_TIME AS DATE))*24,0)||'h' DURATION
+        FROM <include refid="cutoffOnlineSql"/> L
+            JOIN AT_PM_MAOBARRECORD M ON M.CRYSTAL_NUMBER_S=L.CRYSTAL_NUMBER_S
+        WHERE M.CREATION_TIME&lt;SYSDATE-6/24 ORDER BY M.CREATION_TIME
+    </select>
+
+    <sql id="buttOnlineSql">
+        (SELECT
+             T.CRYSTAL_NUMBER_S,T.SPEC_S,T.LENGTH_F,T.MAO_NUMBER
+         FROM
+             (SELECT
+                  ROW_NUMBER() OVER(PARTITION BY M.CRYSTAL_NUMBER_S ORDER BY M.TYPE_I DESC,M.CREATION_TIME DESC) RN,
+                  M.CRYSTAL_NUMBER_S,M.SPEC_S,M.TYPE_I,M.ORDER_STATE_I,M.LENGTH_F,L.CRYSTAL_NUMBER_S MAO_NUMBER
+              FROM AT_PM_MACHINEACCOMPANYORDER M
+                       JOIN AT_PM_LINEATIONANDDETECTION L ON L.CRYSTAL_NUMBER_S=M.BLANK_BAR_NUMBER_S
+              WHERE M.CREATION_TIME>=SYSDATE-60
+                AND NOT EXISTS (SELECT 1 FROM AT_PM_SILICONRODSDETAIL WHERE CRYSTAL_NUMBER_S=M.CRYSTAL_NUMBER_S)
+                AND NOT EXISTS (SELECT 1 FROM AT_QM_UNQUALIFIEDREVIEW
+                                WHERE CRYSTAL_NUMBER_S=M.CRYSTAL_NUMBER_S AND CUTBROKENKNIFETYPE_I IN (8, 7))
+            <if test="workshop != null">
+                AND L.SPARE_1_S=#{workshop}
+            </if>) T
+         WHERE T.RN=1 AND T.TYPE_I=0 AND (ORDER_STATE_I IS NULL OR ORDER_STATE_I!=3)
+           AND NOT EXISTS (SELECT 1 FROM AT_PM_WORKBLANKLINEATION
+                           WHERE CRYSTAL_NUMBER_S=T.CRYSTAL_NUMBER_S AND TRIAL_PROCESSING_I IN (7))
+           AND NOT EXISTS (SELECT 1 FROM AT_PM_ONLINETIMEOUT WHERE CRYSTAL_NUMBER_S=T.CRYSTAL_NUMBER_S)
+           AND EXISTS (SELECT 1 FROM IF_CCS_CUTOFF_WIP WHERE CRYSTAL_NUMBER=T.MAO_NUMBER AND STATU='OFF'))
+    </sql>
+    <sql id="buttOnlineInProcessSql">
+        (SELECT
+            SPEC_S,LENGTH_F,
+            CASE WHEN EXISTS (SELECT 1 FROM IF_CCS_BUTT_WIP WHERE CRYSTAL_NUMBER=T.CRYSTAL_NUMBER_S
+                AND STATU='ON' AND EQUIPMENT!='0') THEN 1 ELSE 0 END IN_PROCESS
+        FROM <include refid="buttOnlineSql"/> T)
+    </sql>
+    <select id="buttOnlineStatisticsAllMass"  parameterType="Map" resultType="Record">
+        SELECT
+            ROUND(SUM(DECODE(IN_PROCESS,0,T.LENGTH_F/C.SQUARE_STANDARD_F,0))/1000,2) WEIGHT,
+            ROUND(SUM(DECODE(IN_PROCESS,1,T.LENGTH_F/C.SQUARE_STANDARD_F,0))/1000,2) IN_PROCESS
+        FROM <include refid="buttOnlineInProcessSql"/> T
+            JOIN AT_MM_CONVERSION C ON C.SPEC_S=T.SPEC_S
+            JOIN AT_QM_RESALONG R ON R.SPEC_S=T.SPEC_S AND R.ISPRODUCTION_S='是'
+    </select>
+    <select id="buttOnlineStatisticsMass" resultType="Record">
+        SELECT
+            T.SPEC_S K,SUM(DECODE(IN_PROCESS,0,1,0)) V1,SUM(DECODE(IN_PROCESS,1,1,0)) V2
+        FROM <include refid="buttOnlineInProcessSql"/> T
+            JOIN AT_MM_CONVERSION C ON C.SPEC_S=T.SPEC_S
+            JOIN AT_QM_RESALONG R ON R.SPEC_S=T.SPEC_S AND R.ISPRODUCTION_S='是' GROUP BY T.SPEC_S
+    </select>
+    <select id="buttOnlineStatistics"  parameterType="Map" resultType="Record">
+        SELECT SPEC_S K,COUNT(1) V FROM <include refid="buttOnlineSql"/> GROUP BY SPEC_S
+    </select>
+    <select id="buttOnlineList"  parameterType="Map" resultType="Record">
+        SELECT
+            T2.CRYSTAL_NUMBER_S,T2.SPEC_S,ROUND(T2.LENGTH_F,0) CRYSTAL_LENGTH,
+            ROUND((SYSDATE-CAST(M.RECEIVE_TIME_T AS DATE))*24,0)||'h' DURATION,
+            (CASE WHEN F.ATR_KEY IS NULL THEN 'N' ELSE 'F' END) IS_FINISH
+        FROM <include refid="buttOnlineSql"/> T2
+            JOIN AT_PM_MAOBARRECORD M ON M.CRYSTAL_NUMBER_S=T2.MAO_NUMBER
+            LEFT JOIN AT_PM_LINEATIONANDDETECTION F
+                ON SUBSTR(F.CRYSTAL_NUMBER_S,1,10)=SUBSTR(T2.CRYSTAL_NUMBER_S,1,10) AND F.IS_FINISH_S='F'
+        WHERE M.RECEIVE_TIME_T&lt;SYSDATE-3/24 ORDER BY M.RECEIVE_TIME_T
+    </select>
+    <select id="buttOnlineListBS"  parameterType="Map" resultType="Record">
+        SELECT
+            T2.CRYSTAL_NUMBER_S,T2.SPEC_S,ROUND(T2.LENGTH_F,0) CRYSTAL_LENGTH,
+            ROUND((SYSDATE-CAST(M.CREATION_TIME AS DATE))*24,0)||'h' DURATION,
+            (CASE WHEN F.ATR_KEY IS NULL THEN 'N' ELSE 'F' END) IS_FINISH
+        FROM <include refid="buttOnlineSql"/> T2
+            JOIN AT_PM_MAOBARRECORD M ON M.CRYSTAL_NUMBER_S=T2.MAO_NUMBER
+            LEFT JOIN AT_PM_LINEATIONANDDETECTION F
+                ON SUBSTR(F.CRYSTAL_NUMBER_S,1,10)=SUBSTR(T2.CRYSTAL_NUMBER_S,1,10) AND F.IS_FINISH_S='F'
+        WHERE M.CREATION_TIME&lt;SYSDATE-1 ORDER BY M.CREATION_TIME
+    </select>
+
+    <sql id="polishingOnlineSql">
+        (SELECT
+             T.CRYSTAL_NUMBER_S,T.SPEC_S,T.LENGTH_F,T.CREATION_TIME,T.MAO_NUMBER
+         FROM
+             (SELECT
+                  ROW_NUMBER() OVER(PARTITION BY M.CRYSTAL_NUMBER_S ORDER BY M.TYPE_I DESC,M.CREATION_TIME DESC) RN,
+                  M.CRYSTAL_NUMBER_S,M.SPEC_S,M.TYPE_I,M.ORDER_STATE_I,M.LENGTH_F,M.CREATION_TIME,
+                  L.CRYSTAL_NUMBER_S MAO_NUMBER
+              FROM AT_PM_MACHINEACCOMPANYORDER M
+                       JOIN AT_PM_LINEATIONANDDETECTION L ON L.CRYSTAL_NUMBER_S=M.BLANK_BAR_NUMBER_S
+              WHERE M.CREATION_TIME>=SYSDATE-60
+                AND NOT EXISTS (SELECT 1 FROM AT_PM_SILICONRODSDETAIL WHERE CRYSTAL_NUMBER_S=M.CRYSTAL_NUMBER_S)
+                AND NOT EXISTS (SELECT 1 FROM AT_QM_UNQUALIFIEDREVIEW
+                                WHERE CRYSTAL_NUMBER_S=M.CRYSTAL_NUMBER_S AND CUTBROKENKNIFETYPE_I IN (8, 7))
+            <if test="workshop != null">
+                AND L.SPARE_1_S=#{workshop}
+            </if>) T
+         WHERE T.RN=1 AND T.TYPE_I=1 AND (ORDER_STATE_I IS NULL OR ORDER_STATE_I!=3)
+           AND NOT EXISTS (SELECT 1 FROM AT_PM_ONLINETIMEOUT WHERE CRYSTAL_NUMBER_S=T.CRYSTAL_NUMBER_S))
+    </sql>
+    <sql id="polishingOnlineInProcessSql">
+        (SELECT
+            SPEC_S,LENGTH_F,
+            CASE WHEN EXISTS (SELECT 1 FROM IF_CCS_POLISHING_WIP WHERE CRYSTAL_NUMBER=T.CRYSTAL_NUMBER_S
+                AND STATU='ON' AND EQUIPMENT!='0') THEN 1 ELSE 0 END IN_PROCESS
+        FROM <include refid="polishingOnlineSql"/> T)
+    </sql>
+    <select id="polishingOnlineStatisticsAllMass"  parameterType="Map" resultType="Record">
+        SELECT
+            ROUND(SUM(DECODE(IN_PROCESS,0,T.LENGTH_F/C.SQUARE_STANDARD_F,0))/1000,2) WEIGHT,
+            ROUND(SUM(DECODE(IN_PROCESS,1,T.LENGTH_F/C.SQUARE_STANDARD_F,0))/1000,2) IN_PROCESS
+        FROM <include refid="polishingOnlineInProcessSql"/> T
+        JOIN AT_MM_CONVERSION C ON C.SPEC_S=T.SPEC_S
+        JOIN AT_QM_RESALONG R ON R.SPEC_S=T.SPEC_S AND R.ISPRODUCTION_S='是'
+    </select>
+    <select id="polishingOnlineStatisticsMass" resultType="Record">
+        SELECT
+            T.SPEC_S K,SUM(DECODE(IN_PROCESS,0,1,0)) V1,SUM(DECODE(IN_PROCESS,1,1,0)) V2
+        FROM <include refid="polishingOnlineInProcessSql"/> T
+            JOIN AT_MM_CONVERSION C ON C.SPEC_S=T.SPEC_S
+            JOIN AT_QM_RESALONG R ON R.SPEC_S=T.SPEC_S AND R.ISPRODUCTION_S='是' GROUP BY T.SPEC_S
+    </select>
+    <select id="polishingOnlineStatistics"  parameterType="Map" resultType="Record">
+        SELECT SPEC_S K,COUNT(1) V FROM <include refid="polishingOnlineSql"/> GROUP BY SPEC_S
+    </select>
+    <select id="polishingOnlineList"  parameterType="Map" resultType="Record">
+        SELECT
+            T2.CRYSTAL_NUMBER_S,T2.SPEC_S,ROUND(T2.LENGTH_F,0) CRYSTAL_LENGTH,
+            ROUND((SYSDATE-CAST(M.RECEIVE_TIME_T AS DATE))*24,0)||'h' DURATION,
+            (CASE WHEN F.ATR_KEY IS NULL THEN 'N' ELSE 'F' END) IS_FINISH
+        FROM <include refid="polishingOnlineSql"/> T2
+            JOIN AT_PM_MAOBARRECORD M ON M.CRYSTAL_NUMBER_S=T2.MAO_NUMBER
+            LEFT JOIN AT_PM_LINEATIONANDDETECTION F
+                ON SUBSTR(F.CRYSTAL_NUMBER_S,1,10)=SUBSTR(T2.CRYSTAL_NUMBER_S,1,10) AND F.IS_FINISH_S='F'
+        WHERE M.RECEIVE_TIME_T&lt;SYSDATE-6/24 ORDER BY M.RECEIVE_TIME_T
+    </select>
+    <select id="polishingOnlineListBS"  parameterType="Map" resultType="Record">
+        SELECT
+            T2.CRYSTAL_NUMBER_S,T2.SPEC_S,ROUND(T2.LENGTH_F,0) CRYSTAL_LENGTH,
+            ROUND((SYSDATE-CAST(M.CREATION_TIME AS DATE))*24,0)||'h' DURATION,
+            (CASE WHEN F.ATR_KEY IS NULL THEN 'N' ELSE 'F' END) IS_FINISH
+        FROM <include refid="polishingOnlineSql"/> T2
+        JOIN AT_PM_MAOBARRECORD M ON M.CRYSTAL_NUMBER_S=T2.MAO_NUMBER
+        LEFT JOIN AT_PM_LINEATIONANDDETECTION F
+            ON SUBSTR(F.CRYSTAL_NUMBER_S,1,10)=SUBSTR(T2.CRYSTAL_NUMBER_S,1,10) AND F.IS_FINISH_S='F'
+        WHERE M.CREATION_TIME&lt;SYSDATE-30/24 ORDER BY M.CREATION_TIME
+    </select>
+
+    <sql id="finishOnlineSql">
+        (SELECT
+             T.CRYSTAL_NUMBER_S,T.SPEC_S,LENGTH_F,T.CREATION_TIME,T.MAO_NUMBER
+         FROM
+             (SELECT
+                  ROW_NUMBER() OVER(PARTITION BY M.CRYSTAL_NUMBER_S ORDER BY M.TYPE_I DESC,M.CREATION_TIME DESC) RN,
+                  M.CRYSTAL_NUMBER_S,M.SPEC_S,M.TYPE_I,M.ORDER_STATE_I,M.LENGTH_F,
+                  M.CREATION_TIME,L.CRYSTAL_NUMBER_S MAO_NUMBER
+              FROM AT_PM_MACHINEACCOMPANYORDER M
+                       JOIN AT_PM_LINEATIONANDDETECTION L ON L.CRYSTAL_NUMBER_S=M.BLANK_BAR_NUMBER_S
+              WHERE M.CREATION_TIME>=SYSDATE-60
+                AND NOT EXISTS (SELECT 1 FROM AT_PM_SILICONRODSDETAIL WHERE CRYSTAL_NUMBER_S=M.CRYSTAL_NUMBER_S)
+                AND NOT EXISTS (SELECT 1 FROM AT_QM_UNQUALIFIEDREVIEW
+                                WHERE CRYSTAL_NUMBER_S=M.CRYSTAL_NUMBER_S AND CUTBROKENKNIFETYPE_I IN (8, 7))
+                <if test="workshop != null">
+                    AND L.SPARE_1_S=#{workshop}
+                </if>) T
+         WHERE T.RN=1 AND T.TYPE_I=2 AND (ORDER_STATE_I IS NULL OR ORDER_STATE_I!=3)
+           AND NOT EXISTS (SELECT 1 FROM AT_PM_ONLINETIMEOUT WHERE CRYSTAL_NUMBER_S=T.CRYSTAL_NUMBER_S))
+    </sql>
+    <select id="finishOnlineStatisticsAllMass"  parameterType="Map" resultType="Record">
+        SELECT
+            ROUND(SUM(T.LENGTH_F/C.SQUARE_STANDARD_F)/1000,2) WEIGHT
+        FROM <include refid="finishOnlineSql"/> T
+        JOIN AT_MM_CONVERSION C ON C.SPEC_S=T.SPEC_S
+        JOIN AT_QM_RESALONG R ON R.SPEC_S=T.SPEC_S AND R.ISPRODUCTION_S='是'
+    </select>
+    <select id="finishOnlineStatisticsMass"  parameterType="Map" resultType="Record">
+        SELECT
+            T.SPEC_S K,COUNT(1) V1,0 V2
+        FROM <include refid="finishOnlineSql"/> T
+        JOIN AT_MM_CONVERSION C ON C.SPEC_S=T.SPEC_S
+        JOIN AT_QM_RESALONG R ON R.SPEC_S=T.SPEC_S AND R.ISPRODUCTION_S='是' GROUP BY T.SPEC_S
+    </select>
+    <select id="finishOnlineStatistics"  parameterType="Map" resultType="Record">
+        SELECT SPEC_S K,COUNT(1) V FROM <include refid="finishOnlineSql"/> GROUP BY SPEC_S
+    </select>
+    <select id="finishOnlineList"  parameterType="Map" resultType="Record">
+        SELECT
+            T2.CRYSTAL_NUMBER_S,T2.SPEC_S,ROUND(T2.LENGTH_F,0) CRYSTAL_LENGTH,
+            ROUND((SYSDATE-CAST(M.RECEIVE_TIME_T AS DATE))*24,0)||'h' DURATION,
+            (CASE WHEN F.ATR_KEY IS NULL THEN 'N' ELSE 'F' END) IS_FINISH,M.CREATION_TIME
+        FROM <include refid="finishOnlineSql"/> T2
+            JOIN AT_PM_MAOBARRECORD M ON M.CRYSTAL_NUMBER_S=T2.MAO_NUMBER
+            LEFT JOIN AT_PM_LINEATIONANDDETECTION F
+                ON SUBSTR(F.CRYSTAL_NUMBER_S,1,10)=SUBSTR(T2.CRYSTAL_NUMBER_S,1,10) AND F.IS_FINISH_S='F'
+        WHERE M.RECEIVE_TIME_T&lt;SYSDATE-10/24 ORDER BY M.RECEIVE_TIME_T
+    </select>
+    <select id="finishOnlineListBS"  parameterType="Map" resultType="Record">
+        SELECT
+            T2.CRYSTAL_NUMBER_S,T2.SPEC_S,ROUND(T2.LENGTH_F,0) CRYSTAL_LENGTH,
+            ROUND((SYSDATE-CAST(M.CREATION_TIME AS DATE))*24,0)||'h' DURATION,
+            (CASE WHEN F.ATR_KEY IS NULL THEN 'N' ELSE 'F' END) IS_FINISH,M.CREATION_TIME
+        FROM <include refid="finishOnlineSql"/> T2
+        JOIN AT_PM_MAOBARRECORD M ON M.CRYSTAL_NUMBER_S=T2.MAO_NUMBER
+        LEFT JOIN AT_PM_LINEATIONANDDETECTION F
+            ON SUBSTR(F.CRYSTAL_NUMBER_S,1,10)=SUBSTR(T2.CRYSTAL_NUMBER_S,1,10) AND F.IS_FINISH_S='F'
+        WHERE M.CREATION_TIME&lt;SYSDATE-35/24 ORDER BY M.CREATION_TIME
+    </select>
+
+    <sql id="halfPalletOnlineSql">
+        (SELECT
+              S.CRYSTAL_NUMBER_S,S.SPEC_S,S.QUALIFIED_LENGTH_F,S.CREATION_TIME
+          FROM AT_PM_SILICONRODSDETAIL S
+                   LEFT JOIN AT_PM_PALLETANDCRYSTALNUMBER PCN ON S.CRYSTAL_NUMBER_S = PCN.CRYSTAL_NUMBER_S
+                   LEFT JOIN AT_PM_PALLETINFO PI ON PI.PALLET_NO_S = PCN.PALLET_NO_S
+          WHERE S.CREATION_TIME>=SYSDATE-60
+        <if test="machineWorkshop != null">
+            AND S.AREA_S=#{machineWorkshop}
+        </if>
+            AND (PI.PACKAGE_STATU_I = 0 OR PCN.PALLET_NO_S IS NULL))
+    </sql>
+    <select id="halfPalletOnlineStatistics"  parameterType="Map" resultType="Record">
+        SELECT SPEC_S K,COUNT(1) V FROM <include refid="halfPalletOnlineSql"/> GROUP BY SPEC_S
+    </select>
+    <select id="halfPalletOnlineList"  parameterType="Map" resultType="Record">
+        SELECT
+            T2.CRYSTAL_NUMBER_S,T2.SPEC_S,ROUND(T2.QUALIFIED_LENGTH_F,0) CRYSTAL_LENGTH,
+            ROUND((SYSDATE-CAST(M.RECEIVE_TIME_T AS DATE))*24,0)||'h' DURATION,
+            (CASE WHEN F.ATR_KEY IS NULL THEN 'N' ELSE 'F' END) IS_FINISH,M.CREATION_TIME
+        FROM <include refid="halfPalletOnlineSql"/> T2
+            JOIN AT_PM_MAOBARRECORD M ON M.CRYSTAL_NUMBER_S=SUBSTR(T2.CRYSTAL_NUMBER_S,1,11)
+            LEFT JOIN AT_PM_LINEATIONANDDETECTION F
+                ON SUBSTR(F.CRYSTAL_NUMBER_S,1,10)=SUBSTR(T2.CRYSTAL_NUMBER_S,1,10) AND F.IS_FINISH_S='F'
+        WHERE M.RECEIVE_TIME_T&lt;SYSDATE-12/24 ORDER BY M.RECEIVE_TIME_T
+    </select>
+    <select id="halfPalletOnlineListBS"  parameterType="Map" resultType="Record">
+        SELECT
+            T2.CRYSTAL_NUMBER_S,T2.SPEC_S,ROUND(T2.QUALIFIED_LENGTH_F,0) CRYSTAL_LENGTH,
+            ROUND((SYSDATE-CAST(M.CREATION_TIME AS DATE))*24,0)||'h' DURATION,
+            (CASE WHEN F.ATR_KEY IS NULL THEN 'N' ELSE 'F' END) IS_FINISH,M.CREATION_TIME
+        FROM <include refid="halfPalletOnlineSql"/> T2
+        JOIN AT_PM_MAOBARRECORD M ON M.CRYSTAL_NUMBER_S=SUBSTR(T2.CRYSTAL_NUMBER_S,1,11)
+        LEFT JOIN AT_PM_LINEATIONANDDETECTION F
+            ON SUBSTR(F.CRYSTAL_NUMBER_S,1,10)=SUBSTR(T2.CRYSTAL_NUMBER_S,1,10) AND F.IS_FINISH_S='F'
+        WHERE M.CREATION_TIME&lt;SYSDATE-35/24 ORDER BY M.CREATION_TIME
+    </select>
+
+    <select id="yesterdayOnlineTotal"  parameterType="int" resultType="Record">
+        SELECT
+           ROUND(SUM(CASE WHEN T.IN_PROCESS=0 THEN T.CRYSTAL_WEIGHT ELSE 0 END)/1000,2) WEIGHT,
+           ROUND(SUM(CASE WHEN T.IN_PROCESS=1 THEN T.CRYSTAL_WEIGHT ELSE 0 END)/1000,2) IN_PROCESS
+        FROM T_MES_ONLINE_DETAIL T JOIN AT_QM_RESALONG R ON R.SPEC_S=T.CRYSTAL_SPEC AND R.ISPRODUCTION_S='是'
+        WHERE T.DATA_TIME=TO_CHAR(TRUNC(SYSDATE)+8/24,'YYYYMMDDHH24') AND CRYSTAL_TYPE=#{crystalType}
+    </select>
+    <select id="yesterdayOnlineBySpec"  parameterType="int" resultType="Record">
+        SELECT
+            T.CRYSTAL_SPEC K,SUM(DECODE(T.IN_PROCESS,0,1,0)) V1,SUM(DECODE(T.IN_PROCESS,1,1,0)) V2
+        FROM T_MES_ONLINE_DETAIL T JOIN AT_QM_RESALONG R ON R.SPEC_S=T.CRYSTAL_SPEC AND R.ISPRODUCTION_S='是'
+        WHERE T.DATA_TIME=TO_CHAR(TRUNC(SYSDATE)+8/24,'YYYYMMDDHH24') AND CRYSTAL_TYPE=#{crystalType}
+        GROUP BY T.CRYSTAL_SPEC
+    </select>
+</mapper>

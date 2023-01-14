@@ -6,6 +6,7 @@ import com.mes.mvc.pojo.Page;
 import com.mes.system.kanban.entity.KanbanResource;
 import com.mes.system.kanban.service.KanbanResourceService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -25,11 +26,13 @@ public class KanbanController {
      * 获取看板资源
      */
     @GetMapping("queryResourcePage")
-    public Result<Page> queryResourcePage(String factory, Integer type, String name, Integer page, Integer pageSize) {
+    public Result<Page> queryResourcePage(String factory, String type, String name, Integer page, Integer pageSize) {
         Map<String, Object> param = Maps.newHashMap();
         param.put("factory", factory);
         param.put("type", type);
-        param.put("name", "%" + name + "%");
+        if (StringUtils.hasText(name)) {
+            param.put("name", "%" + name + "%");
+        }
         param.put("page", page);
         param.put("pageSize", pageSize);
         return Result.success(kanbanResourceService.queryResourcePage(param));

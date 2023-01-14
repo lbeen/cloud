@@ -25,13 +25,10 @@ public class KanbanResource {
     @NotBlank(message = "资源位置不能为空")
     @TableField("RESOURCE_LOCATION")
     private String location;
-    @NotBlank(message = "资源数量不能为空")
     @TableField("RESOURCE_COUNT")
     private Integer count;
-    @NotBlank(message = "资源时长不能为空")
     @TableField("RESOURCE_DURATION")
     private Integer duration;
-    @NotBlank(message = "工厂不能为空")
     @TableField("FACTORY")
     private String factory;
 }

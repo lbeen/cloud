@@ -11,7 +11,7 @@ public class LogDTO {
     private String serverIP;
     private String serverPort;
     private String clientIP;
-    private String user;
-    private int level;
-    private String content;
+    private String operateUser;
+    private int logLevel;
+    private String logContent;
 }

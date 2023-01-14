@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mes.kanban.common.mapper.PayLengthMapper">
+    <select id="machinePayLengthByProcess" resultType="Record">
+        SELECT
+            CE.X_MEANING_S K,SUM(UNQUALIFIED_LENGTH_F) V
+        FROM AT_QM_UNQUALIFIEDREVIEW U
+            JOIN AT_X_CHOICELIST CL ON CL.ATR_NAME='DutyDepartment'
+            JOIN AT_X_CHOICEELEMENT CE ON CE.X_CHOICELIST_64=CL.ATR_KEY AND CE.X_VALUE_I=U.DUTYDEPART_I
+        WHERE U.CREATION_TIME >= #{startTime} AND U.CREATION_TIME &lt; #{endTime}
+          AND U.DUTYDEPART_ONELEVEL_S='机加' AND U.UNQUALIFIED_LENGTH_F>0
+        GROUP BY CE.X_MEANING_S
+    </select>
+    <select id="machinePayLengthByReason" resultType="Record">
+        SELECT
+            BAD_GRADES2_S K,SUM(UNQUALIFIED_LENGTH_F) V
+        FROM AT_QM_UNQUALIFIEDREVIEW U
+            JOIN AT_X_CHOICELIST CL ON CL.ATR_NAME='DutyDepartment'
+            JOIN AT_X_CHOICEELEMENT CE ON CE.X_CHOICELIST_64=CL.ATR_KEY AND CE.X_VALUE_I=U.DUTYDEPART_I
+        WHERE U.CREATION_TIME >= #{startTime} AND U.CREATION_TIME &lt; #{endTime}
+          AND U.UNQUALIFIED_LENGTH_F>0 AND CE.X_MEANING_S=#{process}
+        GROUP BY BAD_GRADES2_S
+    </select>
+</mapper>

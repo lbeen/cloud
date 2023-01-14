@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mes.kanban.common.mapper.EquipmentMapper">
+    <select id="equipmentCount" parameterType="Map" resultType="double">
+        SELECT COUNT(1) FROM EQUIPMENT E JOIN UDA_EQUIPMENT U ON U.OBJECT_KEY=E.EQUIP_KEY
+        WHERE SUBSTR(E.EQUIP_NAME,1,3) = #{process} AND U.STATUS_I=10
+    </select>
+
+    <sql id="waitingTime">
+        SELECT
+            EQUIPMENT,PROCESS,
+            (CAST(#{endTime} AS DATE)-CAST(#{startTime} AS DATE))*24 ALL_TIME,
+            SUM(CASE WHEN (CAST(END_TIME AS DATE)-CAST(START_TIME AS DATE))*24&lt;3
+                              AND (CAST(END_TIME AS DATE)-CAST(START_TIME AS DATE))*24*60>30
+                THEN (CAST(END_TIME AS DATE)-CAST(START_TIME AS DATE))*24 ELSE 0 END) WAITING,
+            SUM(CASE WHEN (CAST(END_TIME AS DATE)-CAST(START_TIME AS DATE))*24>=3 THEN (CAST(END_TIME AS DATE)-CAST(START_TIME AS DATE))*24 ELSE 0  END) EXCLUDE
+        FROM
+        (SELECT
+            EQUIPMENT,PROCESS,
+            CASE WHEN START_TIME&lt;#{startTime} THEN #{startTime} ELSE START_TIME END START_TIME,
+            CASE WHEN END_TIME>#{endTime} THEN #{endTime} ELSE END_TIME END END_TIME
+        FROM T_MES_EQUIPMENT_TIME WHERE DATA_TYPE=1
+            AND (START_TIME>#{startTime} AND START_TIME&lt;=#{endTime} OR END_TIME>#{startTime} AND END_TIME&lt;=#{endTime})
+        <if test="process != null">
+            AND PROCESS=#{process}
+        </if>
+        UNION ALL
+        SELECT
+            EQUIPMENT,PROCESS,
+            CASE WHEN START_TIME&lt;#{startTime} THEN #{startTime} ELSE START_TIME END START_TIME,
+            #{endTime} END_TIME
+        FROM T_MES_EQUIPMENT_TIME WHERE DATA_TYPE=0 AND PROCESS='polishing'
+            AND START_TIME>#{startTime} AND START_TIME&lt;=#{endTime}
+        <if test="process != null">
+            AND PROCESS=#{process}
+        </if>)
+        GROUP BY EQUIPMENT,PROCESS
+    </sql>
+    <select id="waitingTimeByProcess" parameterType="Map" resultType="Record">
+        SELECT
+            PROCESS,SUM(WAITING) WAITING,SUM(ALL_TIME-EXCLUDE) TOTAL
+        FROM (<include refid="waitingTime"/>) GROUP BY PROCESS
+    </select>
+    <select id="waitingTimeByEquipment" parameterType="Map" resultType="Record">
+        SELECT
+            EQUIPMENT,ROUND(WAITING,2) WAITING,ROUND(ALL_TIME-EXCLUDE,2) TOTAL
+        FROM (<include refid="waitingTime"/>) WHERE WAITING>0
+    </select>
+
+    <select id="maintenanceTimeByProcess" parameterType="Map" resultType="Record">
+        SELECT
+            T1.DEVICE_IDENTIFIER_S K,
+            SUM(CASE
+                    WHEN LENGTH(T.REPAIRORDER_ID_S) > 0 THEN
+                        (SELECT (CAST(TT.REPAIR_ENDTIME_T AS DATE) - CAST(TT.CREATION_TIME AS DATE)) * 24
+                         FROM AT_EM_REPAIRORDER TT WHERE TT.REPAIRORDER_ID_S = T.REPAIRORDER_ID_S)
+                    ELSE (CAST(T.END_TIME_T AS DATE) - CAST(T.CREATION_TIME AS DATE)) * 24
+                END) V
+        FROM AT_EM_REPAIRREASON T1 LEFT JOIN AT_EM_DOWNTIMERECORD T
+            ON T1.DEVICE_IDENTIFIER_S=SUBSTR(T.EQUIPMENT_NUMBER_S, 0, 3) AND T1.STOP_TYPE1_S = T.STOP_TYPE1_S
+            AND T1.STOP_TYPE2_S=T.STOP_TYPE2_S AND T1.DETAILED_PROJECT_S = T.DETAILED_PROJECT_S
+        WHERE T.DETAILED_PROJECT_S IS NOT NULL AND T1.AREA_S LIKE '机加%'
+          AND T.RECORD_TIME_T >= #{startTime} AND T.RECORD_TIME_T &lt; #{endTime}
+        GROUP BY T1.DEVICE_IDENTIFIER_S
+    </select>
+    <select id="maintenanceTimeByEquipment" parameterType="Map" resultType="Record">
+        SELECT
+            T.EQUIPMENT_NUMBER_S K2,T1.STOP_TYPE2_S K1,
+           (CASE
+                WHEN LENGTH(T.REPAIRORDER_ID_S) > 0 THEN
+                    ROUND((SELECT (CAST(TT.REPAIR_ENDTIME_T AS DATE) - CAST(TT.CREATION_TIME AS DATE)) * 24
+                           FROM AT_EM_REPAIRORDER TT
+                           WHERE TT.REPAIRORDER_ID_S = T.REPAIRORDER_ID_S), 2)
+                ELSE ROUND((CAST(T.END_TIME_T AS DATE) - CAST(T.CREATION_TIME AS DATE)) * 24, 2) END) V
+        FROM AT_EM_REPAIRREASON T1 LEFT JOIN AT_EM_DOWNTIMERECORD T
+            ON T1.DEVICE_IDENTIFIER_S = SUBSTR(T.EQUIPMENT_NUMBER_S, 0, 3) AND T1.STOP_TYPE1_S = T.STOP_TYPE1_S
+            AND T1.STOP_TYPE2_S = T.STOP_TYPE2_S AND T1.DETAILED_PROJECT_S = T.DETAILED_PROJECT_S
+        WHERE T.DETAILED_PROJECT_S IS NOT NULL AND T1.AREA_S LIKE '机加%'
+          AND T1.DEVICE_IDENTIFIER_S = #{process}
+          AND T.RECORD_TIME_T >= #{startTime} AND T.RECORD_TIME_T &lt; #{endTime}
+    </select>
+
+    <select id="runningEquipmentCountCutoff" parameterType="Map" resultType="double">
+        SELECT COUNT(DISTINCT EQUIPMENT) FROM IF_CCS_CUTOFF_WIP
+        WHERE ACTION_TIME>=#{startTime} AND ACTION_TIME&lt;#{endTime} AND EQUIPMENT!='0'
+    </select>
+    <select id="runningEquipmentCountButt" parameterType="Map" resultType="double">
+        SELECT COUNT(DISTINCT EQUIPMENT) FROM IF_CCS_BUTT_WIP
+        WHERE ACTION_TIME>=#{startTime} AND ACTION_TIME&lt;#{endTime} AND EQUIPMENT!='0'
+    </select>
+    <select id="runningEquipmentCountPolishing" parameterType="Map" resultType="double">
+        SELECT COUNT(DISTINCT EQUIPMENT) FROM IF_CCS_POLISHING_WIP
+        WHERE ACTION_TIME>=#{startTime} AND ACTION_TIME&lt;#{endTime} AND EQUIPMENT!='0'
+    </select>
+</mapper>

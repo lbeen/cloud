@@ -8,6 +8,7 @@ import com.mes.system.log.entity.SystemLog;
 import com.mes.system.log.service.SystemLogService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -37,7 +38,9 @@ public class LogController {
         param.put("endTime", endTime);
         param.put("user", user);
         param.put("level", level);
-        param.put("content", "%" + content + "%");
+        if (StringUtils.hasText(content)) {
+            param.put("content", "%" + content + "%");
+        }
         param.put("page", page);
         param.put("pageSize", pageSize);
         return Result.success(systemLogService.queryLogPage(param));

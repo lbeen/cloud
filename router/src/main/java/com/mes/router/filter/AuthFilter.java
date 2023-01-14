@@ -28,7 +28,7 @@ public class AuthFilter implements GlobalFilter, Ordered {
         ServerHttpResponse response = exchange.getResponse();
 
         String path = request.getURI().getPath();
-        if (path.startsWith("/system/login") || path.startsWith("/system/refreshToken")) {
+        if (path.startsWith("/system/login") || path.startsWith("/system/refreshToken") || path.startsWith("/kanban")) {
             return chain.filter(exchange);
         }
 

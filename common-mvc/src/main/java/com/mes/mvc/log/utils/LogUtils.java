@@ -46,10 +46,10 @@ public class LogUtils {
         logDTO.setServer(ServerUtils.serverName());
         logDTO.setServerIP(ServerUtils.serverIP());
         logDTO.setServerPort(ServerUtils.serverPort());
-        logDTO.setUser(user);
+        logDTO.setOperateUser(user);
         logDTO.setClientIP(MvcAuthUtils.getClientIP());
-        logDTO.setLevel(level);
-        logDTO.setContent(content);
+        logDTO.setLogLevel(level);
+        logDTO.setLogContent(content);
         return LOG_SERVICE.saveLog(logDTO);
     }
 }
