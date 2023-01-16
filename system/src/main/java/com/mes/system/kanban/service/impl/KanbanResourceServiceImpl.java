@@ -20,7 +20,13 @@ public class KanbanResourceServiceImpl extends ServiceImpl<KanbanResourceMapper,
 
     @Transactional(rollbackFor = Exception.class)
     @Override
-    public void saveResources(KanbanResource resource) {
+    public void saveResource(KanbanResource resource) {
         saveOrUpdate(resource);
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    @Override
+    public void deleteResource(String id) {
+        removeById(id);
     }
 }

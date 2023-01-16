@@ -7,6 +7,7 @@ import com.mes.system.kanban.entity.KanbanResource;
 import com.mes.system.kanban.service.KanbanResourceService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.util.StringUtils;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -14,8 +15,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
+import javax.validation.constraints.NotBlank;
 import java.util.Map;
 
+@Validated
 @RestController
 @RequestMapping("kanban")
 @RequiredArgsConstructor
@@ -43,7 +46,16 @@ public class KanbanController {
      */
     @PostMapping("saveResource")
     public Result<?> saveResource(@RequestBody @Valid KanbanResource resource) {
-        kanbanResourceService.saveResources(resource);
-        return Result.success("保存成功");
+        kanbanResourceService.saveResource(resource);
+        return Result.message("保存成功");
+    }
+
+    /**
+     * 保存看板资源
+     */
+    @PostMapping("deleteResource")
+    public Result<?> deleteResource(@NotBlank(message = "资源ID不能为空") String id) {
+        kanbanResourceService.deleteResource(id);
+        return Result.message("删除成功");
     }
 }

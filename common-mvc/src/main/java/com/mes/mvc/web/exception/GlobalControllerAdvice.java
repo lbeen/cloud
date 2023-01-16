@@ -7,6 +7,8 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import javax.validation.ConstraintViolation;
+import javax.validation.ConstraintViolationException;
 import java.util.stream.Collectors;
 
 @RestControllerAdvice
@@ -16,6 +18,11 @@ public class GlobalControllerAdvice {
         if (throwable instanceof BindException) {
             String message = ((BindException) throwable).getBindingResult().getFieldErrors().stream().map(
                     FieldError::getDefaultMessage).collect(Collectors.joining("，"));
+            return Result.error(message);
+        }
+        if (throwable instanceof ConstraintViolationException) {
+            String message = ((ConstraintViolationException) throwable).getConstraintViolations().stream().map(
+                    ConstraintViolation::getMessage).collect(Collectors.joining(","));
             return Result.error(message);
         }
 

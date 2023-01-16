@@ -9,5 +9,7 @@ import java.util.Map;
 public interface KanbanResourceService extends IService<KanbanResource> {
     Page queryResourcePage(Map<String, Object> param);
 
-    void saveResources(KanbanResource resource);
+    void saveResource(KanbanResource resource);
+
+    void deleteResource(String id);
 }
